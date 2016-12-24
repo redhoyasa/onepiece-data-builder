@@ -10,6 +10,12 @@ class UrlRetriever():
     def retrieve_devil_fruit_urls(self):
         devil_fruit_urls = []
         devil_fruit_types = ['Paramecia', 'Zoan', 'Logia']
+        excluded_url = [
+            '/wiki/Artificial_Devil_Fruit',
+            '/wiki/Paramecia',
+            '/wiki/Logia',
+            '/wiki/Zoan'
+        ]
 
         for devil_fruit_type in devil_fruit_types:
             url_params = {
@@ -22,9 +28,9 @@ class UrlRetriever():
             categories = r.json()['items']
 
             for category in categories:
-                if 'Category:' not in category['url']:
-                    devil_fruit_urls.append('{}{}'.format(
-                        self.ROOT_URL,
-                        category['url']))
+                if ('Category:' not in category['url'] and category['url'] not in excluded_url):
+                        devil_fruit_urls.append('{}{}'.format(
+                            self.ROOT_URL,
+                            category['url']))
 
         return devil_fruit_urls
