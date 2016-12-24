@@ -1,12 +1,10 @@
 import scrapy
-import pandas as pd
 from url_retriever import UrlRetriever
 
 
-class OnePieceWikiaSpider(scrapy.Spider):
-    name = 'One Piece'
+class OpDevilFruitsSpider(scrapy.Spider):
+    name = 'op-devil-fruits'
     start_urls = UrlRetriever.retrieve_devil_fruit_urls()
-    # start_urls = ['http://onepiece.wikia.com/wiki/Mera_Mera_no_Mi']
 
     def parse(self, response):
         data = {}
