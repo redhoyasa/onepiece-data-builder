@@ -25,12 +25,18 @@ class UrlRetriever():
 
             r = requests.get(self.SEARCH_URL, params=url_params)
 
-            categories = r.json()['items']
+            items = r.json()['items']
 
-            for category in categories:
-                if ('Category:' not in category['url'] and category['url'] not in excluded_url):
-                        devil_fruit_urls.append('{}{}'.format(
-                            self.ROOT_URL,
-                            category['url']))
+            for item in items:
+                is_devil_fruit_url = (
+                    ('Category:' not in item['url']) and
+                    (item['url'] not in excluded_url)
+                )
+
+                if is_devil_fruit_url:
+                    devil_fruit_urls.append('{}{}'.format(
+                        self.ROOT_URL,
+                        item['url'])
+                    )
 
         return devil_fruit_urls

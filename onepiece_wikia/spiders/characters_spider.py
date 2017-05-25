@@ -1,15 +1,19 @@
 import scrapy
-from url_retriever import UrlRetriever
 
 
-class OpDevilFruitsSpider(scrapy.Spider):
-    name = 'op-devil-fruits'
-    start_urls = UrlRetriever.retrieve_devil_fruit_urls()
+class CharactersSpider(scrapy.Spider):
+    name = 'characters'
+
+    def start_requests(self):
+        urls = ['http://onepiece.wikia.com/wiki/List_of_Canon_Characters']
+        for url in urls:
+            yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
         data = {}
-        header_title = response.css('.header-title')[0]
-        title = header_title.css('h1::text').extract_first()
+        title = response.xpath(
+            '//div[contains(@class,"header-title")]/h1/text()'
+        ).extract_first()
         data['devilfruit_name'] = title
         data['devilfruit_wiki_url'] = response.url
         data['devilfruit_type'] = 'UNKNOWN'
