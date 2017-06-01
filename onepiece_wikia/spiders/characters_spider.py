@@ -1,4 +1,5 @@
 import scrapy
+from urllib import parse
 
 
 class CharactersSpider(scrapy.Spider):
@@ -10,29 +11,41 @@ class CharactersSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
+        list_of_character_page = response.xpath(
+            '//table[1]/tr')
+
+        base_url = 'http://onepiece.wikia.com'
+
+        for character_page in list_of_character_page:
+            page_link = character_page.xpath(
+                'td[2]/a/@href').extract_first()
+
+            if page_link:
+                next_page = base_url + page_link
+                yield scrapy.Request(
+                    next_page, callback=self.crawl_character_page)
+
+    def crawl_character_page(self, response):
         data = {}
-        title = response.xpath(
+        data['character_name'] = response.xpath(
             '//div[contains(@class,"header-title")]/h1/text()'
         ).extract_first()
-        data['devilfruit_name'] = title
-        data['devilfruit_wiki_url'] = response.url
-        data['devilfruit_type'] = 'UNKNOWN'
-        data['devilfruit_previous_user'] = None
-        data['devilfruit_current_user'] = None
+        data['character_name'] = parse.unquote(data['character_name'])
 
-        for pi_data in response.css('.pi-data'):
-            label = pi_data.css('.pi-data-label::text').extract_first()
+        data['character_wiki_url'] = response.url
+        data['character_wiki_url'] = parse.unquote(data['character_wiki_url'])
+        data['character_bounty'] = None
 
-            if label == 'Type:':
-                data['devilfruit_type'] = \
-                    pi_data.css('div.pi-data-value a::text').extract_first()
+        pi_data = response.xpath(
+            '//div[contains(concat(" ",@class," ")," pi-data ")]'
+        )
 
-            if label == 'Previous User:':
-                data['devilfruit_previous_user'] = \
-                    pi_data.css('div.pi-data-value a::text').extract_first()
+        for pi_data_row in pi_data:
+            label = pi_data_row.xpath('h3/text()').extract_first()
 
-            if label == 'Current User:':
-                data['devilfruit_current_user'] = \
-                    pi_data.css('div.pi-data-value a::text').extract_first()
+            if label == 'Bounty:':
+                data['character_bounty'] = pi_data_row.xpath(
+                    'div/text()'
+                ).extract_first()
 
         yield data
